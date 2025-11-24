@@ -53,7 +53,130 @@ void print_codebook(codebook *cb) {
     printf("========================================\n\n");
 }
 
+int sort_queue_by_probability(huffman_node **queue, size_t size) {
+    // bubble sort implementation
+    for (size_t i = 0; i < size - 1; i++) {
+        for (size_t j = 0; j < size - i - 1; j++) {
+            if (queue[j]->probability > queue[j + 1]->probability) {
+                huffman_node *temp = queue[j];
+                queue[j] = queue[j + 1];
+                queue[j + 1] = temp;
+            }
+        }
+    }
+    return 1;
+}
+
+int print_huffman_tree(huffman_node *node, int depth) {
+    // depth-first traversal to print the tree structure
+    if (node == NULL) {
+        return 0;
+    }
+    for (int i = 0; i < depth; i++) {
+        printf("  ");
+    }
+    if (node->left == NULL && node->right == NULL) {
+        printf("Leaf: '%c' (%.6f)\n", node->symbol, node->probability);
+    } else {
+        printf("Node: (%.6f)\n", node->probability);
+    }
+    print_huffman_tree(node->left, depth + 1);
+    print_huffman_tree(node->right, depth + 1);
+    return 0;
+}
+
+int trace_huffman_tree_and_generate_codewords(huffman_node *node, char *code, codebook *cb) {
+    // Implementation of tracing Huffman tree to generate codewords (not shown here)
+    if (node == NULL) {
+        return 0;
+    }
+    // If leaf node, add codeword to codebook
+    if (node->left == NULL && node->right == NULL) {
+        for (size_t i = 0; i < cb->size; i++) {
+            if (cb->words[i].symbol == node->symbol) {
+                sprintf(cb->words[i].bits, "%s", code);
+                break;
+            }
+        }
+    } else {
+        // Traverse left
+        char left_code[32];
+        sprintf(left_code, "%s0", code);
+        trace_huffman_tree_and_generate_codewords(node->left, left_code, cb);
+        
+        // Traverse right
+        char right_code[32];
+        sprintf(right_code, "%s1", code);
+        trace_huffman_tree_and_generate_codewords(node->right, right_code, cb);
+    }
+    return 0;
+}
+
+
+int generate_codewords_from_huffman_tree(huffman_tree *tree, codebook *cb) {
+    // Implementation of codeword generation from Huffman tree (not shown here)
+    // trace the tree to generate codewords and fill the codebook
+    trace_huffman_tree_and_generate_codewords(tree->root, "", cb);
+    return 0;
+}
 int build_huffman_tree(huffman_tree *tree, codebook *cb) {
+    // copy codebook data to huffman tree nodes
+    huffman_node **nodes = (huffman_node **)malloc(cb->size * sizeof(huffman_node *));
+    for(int i=0;i<cb->size;i++) {
+        nodes[i] = (huffman_node *)malloc(sizeof(huffman_node));
+        nodes[i]->symbol = cb->words[i].symbol;
+        nodes[i]->probability = cb->words[i].probability;
+        nodes[i]->left = NULL;
+        nodes[i]->right = NULL;
+    }
+
+    // initialization of Huffman tree nodes from codebook
+    // initialize priority queue
+    huffman_node **queue = (huffman_node **)malloc(cb->size * sizeof(huffman_node *));
+    size_t queue_size = cb->size;
+    for (size_t i = 0; i < cb->size; i++) {
+        queue[i] = nodes[i];
+    }
+
+    // sort queue by probability
+    sort_queue_by_probability(queue, queue_size);
+
+    // generate father nodes until only one node remains in the queue
+    while (queue_size > 1) {
+        // take out two nodes with smallest probabilities
+        huffman_node *left = queue[0];
+        huffman_node *right = queue[1];
+
+        // create new father node
+        huffman_node *father = (huffman_node *)malloc(sizeof(huffman_node));
+        father->symbol = '\0'; // internal node
+        father->probability = left->probability + right->probability;
+        father->left = left;
+        father->right = right;
+
+        // remove the two nodes from the queue
+        for (size_t i = 2; i < queue_size; i++) {
+            queue[i - 2] = queue[i];
+        }
+        queue_size -= 2;
+
+        // add the new father node to the queue
+        queue[queue_size] = father;
+        queue_size++;
+
+        // sort the queue again
+        sort_queue_by_probability(queue, queue_size);
+    }
+
+    // the remaining node is the root of the Huffman tree
+    tree->root = queue[0];
+    //tree->size = cb->size;
+    free(queue);
+    free(nodes);
+
+    // print the Huffman tree for debugging
+    print_huffman_tree(tree->root, 0);
+
     // Implementation of Huffman tree building (not shown here)
     return 0;
 }
@@ -90,6 +213,11 @@ int main() {
 
     // conduct Huffman encoding on input data (not implemented here)
     build_huffman_tree(&ht, &cb);
+
+    // generate codewords from Huffman tree (not implemented here)
+    generate_codewords_from_huffman_tree(&ht, &cb);
+
+    print_codebook(&cb);
 
     return 0;
 }
