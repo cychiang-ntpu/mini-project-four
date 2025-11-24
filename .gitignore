@@ -1,0 +1,54 @@
+# Compiled executables
+*.exe
+*.out
+*.app
+encoder
+a.out
+
+# Object files
+*.o
+*.obj
+*.ko
+*.elf
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# VS Code settings (optional - remove if you want to commit)
+.vscode/
+*.code-workspace
+
+# Output and temporary files
+output.txt
+*.tmp
+*.log
+*.swp
+*.swo
+*~
+
+# OS specific files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Core dumps
+core
+core.*
