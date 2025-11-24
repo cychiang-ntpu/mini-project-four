@@ -20,12 +20,12 @@ jobs:
         
       # 步驟 3: 運行並驗證程式（直接執行程式）
       - name: Run compiled application
-        run: ./encoder
+        run: ./encoder > output.txt && cat output.txt
         
       # 步驟 4: 上傳建置成品（可選）
       # 將編譯好的可執行檔儲存為 Artifact，供下載
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: encoder-c-executable
-          path: encoder
+          name: output-txt
+          path: output.txt
